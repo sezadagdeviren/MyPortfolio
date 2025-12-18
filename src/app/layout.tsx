@@ -4,6 +4,7 @@ import Script from 'next/script'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://my-portfolio-ten-sigma-98.vercel.app'),
   title: 'SEZA DAĞDEVİREN — Computer Science Enthusiast & Blogger',
   description: 'Portfolio of Seza Dağdeviren. Tech passionate, computer science enthusiast and blogger exploring the future of software and technology.',
   keywords: ['portfolio', 'seza dağdeviren', 'computer science', 'blogger', 'tech logs', 'software development'],
@@ -31,7 +32,7 @@ export default function RootLayout({
     '@type': 'Person',
     name: 'Seza Dağdeviren',
     jobTitle: 'Computer Science Enthusiast & Blogger',
-    url: 'https://sezadagdeviren.com',
+    url: 'https://my-portfolio-ten-sigma-98.vercel.app',
     sameAs: [
       'https://github.com/sezadagdeviren',
       'https://linkedin.com/in/sezadagdeviren',

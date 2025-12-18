@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = 'https://sezadagdeviren.com' // Kendi domaininizle güncelleyin
+    const baseUrl = 'https://my-portfolio-ten-sigma-98.vercel.app'
 
     // Statik rotalar
     const routes = ['', '/about', '/projects', '/blog', '/contact'].map((route) => ({
