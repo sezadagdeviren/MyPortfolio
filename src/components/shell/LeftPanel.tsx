@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGameState } from '@/lib/state/useGameState'
 import { MENU_ITEM_VARIANTS, FADE_IN_UP } from '@/lib/motion/variants'
@@ -12,61 +12,42 @@ const MENU_ITEMS: MenuItem[] = [
     { label: { en: 'About', tr: 'Hakkımda' }, href: '/about', scene: 'about', color: '#00d4ff' },
     { label: { en: 'Projects', tr: 'Projeler' }, href: '/projects', scene: 'projects', color: '#ff00ff' },
     { label: { en: 'Blog', tr: 'Blog' }, href: '/blog', scene: 'blog', color: '#ffaa00' },
-    { label: { en: 'Language: EN', tr: 'Dil: TR' }, scene: 'language', color: '#ffffff' },
     { label: { en: 'Contact', tr: 'İletişim' }, href: '/contact', scene: 'contact', color: '#ff0055' }
 ]
 
 export default function LeftPanel() {
     const router = useRouter()
+    const pathname = usePathname()
     const {
         menuIndex,
         setMenuIndex,
-        menuState,
         setMenuState,
         setPreviewScene,
-        hasInteracted,
-        setHasInteracted,
         language,
-        setLanguage
+        setLanguage,
+        setHasInteracted
     } = useGameState()
 
     const [bootComplete, setBootComplete] = useState(false)
-    const hoverTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
+    const scrollRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const timer = setTimeout(() => setBootComplete(true), 1000)
         return () => clearTimeout(timer)
     }, [])
 
+    // Sync menu index with pathname
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowDown') {
-                e.preventDefault()
-                setHasInteracted(true)
-                setMenuIndex(Math.min(menuIndex + 1, MENU_ITEMS.length - 1))
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault()
-                setHasInteracted(true)
-                setMenuIndex(Math.max(menuIndex - 1, 0))
-            } else if (e.key === 'Enter') {
-                e.preventDefault()
-                setHasInteracted(true)
-                const item = MENU_ITEMS[menuIndex]
-                if (item.scene === 'language') {
-                    setLanguage(language === 'en' ? 'tr' : 'en')
-                } else if (item.href) {
-                    handleSelect(item.href, menuIndex)
-                }
-            }
-        }
-
-        window.addEventListener('keydown', handleKeyDown)
-        return () => window.removeEventListener('keydown', handleKeyDown)
-    }, [menuIndex, setMenuIndex, setHasInteracted, language, setLanguage])
+        const currentIdx = MENU_ITEMS.findIndex(item =>
+            item.href === pathname || (item.href !== '/' && pathname.startsWith(item.href as string))
+        )
+        if (currentIdx !== -1) setMenuIndex(currentIdx)
+    }, [pathname, setMenuIndex])
 
     const handleSelect = (href: string, index: number) => {
         setMenuState('active')
         setMenuIndex(index)
+        setHasInteracted(true)
 
         setTimeout(() => {
             router.push(href)
@@ -74,28 +55,12 @@ export default function LeftPanel() {
         }, 200)
     }
 
-    const handleHover = (index: number, scene: string) => {
-        setMenuIndex(index)
-
-        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-        hoverTimeoutRef.current = setTimeout(() => {
-            setMenuState('previewing')
-            setPreviewScene(scene)
-        }, 300)
-    }
-
-    const handleHoverEnd = () => {
-        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
-        setMenuState('idle')
-        setPreviewScene(null)
-    }
-
     return (
-        <nav className="left-panel h-full" aria-label="Main navigation">
+        <nav className="left-panel w-full lg:h-full lg:flex lg:flex-col" aria-label="Main navigation">
             <AnimatePresence>
                 {!bootComplete && (
                     <motion.div
-                        className="absolute inset-0 bg-background-primary flex items-center justify-center z-50"
+                        className="fixed inset-0 bg-background-primary flex items-center justify-center z-[200]"
                         initial={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.4 }}
@@ -107,97 +72,96 @@ export default function LeftPanel() {
                 )}
             </AnimatePresence>
 
-            <div className="p-8 flex flex-col gap-12 flex-1">
-                <motion.h1
-                    className="font-mono text-2xl font-bold tracking-[0.2em] text-white"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.6 }}
+            {/* Desktop & Mobile Identity Header */}
+            <div className="p-4 md:p-8 flex items-center justify-between lg:flex-col lg:items-start lg:gap-12">
+                <motion.div
+                    className="flex flex-col"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
                 >
-                    <span className="glitch" data-text="SEZA">SEZA</span>
-                </motion.h1>
+                    <h1 className="font-mono text-xl md:text-2xl font-bold tracking-[0.2em] text-white">
+                        <span className="glitch" data-text="SEZA">SEZA</span>
+                    </h1>
+                    <span className="hidden lg:block font-mono text-[9px] text-neon-cyan/50 tracking-widest uppercase mt-1">
+                        {language === 'en' ? 'Core Operator' : 'Ana Operatör'}
+                    </span>
+                </motion.div>
 
-                <ul className="flex flex-col gap-2" role="menu">
-                    {MENU_ITEMS.map((item, i) => (
-                        <motion.li
-                            key={item.scene}
-                            role="none"
-                            custom={i}
-                            initial="initial"
-                            animate="animate"
-                            variants={MENU_ITEM_VARIANTS}
-                        >
-                            <motion.button
-                                role="menuitem"
-                                className={`relative flex items-center gap-4 px-6 py-4 font-mono text-sm uppercase tracking-wider rounded transition-all w-full text-left
-                  ${menuIndex === i
-                                        ? 'text-white bg-white/5 border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)]'
-                                        : 'text-[#a0a0b8] bg-transparent border border-transparent hover:text-white hover:bg-white/3 hover:border-white/10'
-                                    }`}
-                                onClick={() => {
-                                    if (item.scene === 'language') {
-                                        setLanguage(language === 'en' ? 'tr' : 'en')
-                                    } else if (item.href) {
-                                        handleSelect(item.href, i)
-                                    }
-                                }}
-                                onMouseEnter={() => handleHover(i, item.scene)}
-                                onMouseLeave={handleHoverEnd}
-                                whileHover={{ x: 8 }}
-                                whileTap={{ scale: 0.98 }}
+                {/* Language Toggle - Desktop/Mobile Switcher */}
+                <button
+                    className="px-3 py-1.5 border border-white/10 rounded font-mono text-[10px] text-[#a0a0b8] hover:text-white hover:border-neon-cyan transition-all"
+                    onClick={() => setLanguage(language === 'en' ? 'tr' : 'en')}
+                >
+                    {language === 'en' ? 'LN: EN' : 'DL: TR'}
+                </button>
+            </div>
+
+            {/* Navigation Container */}
+            <div
+                className="lg:px-8 pb-4 lg:pb-8 overflow-x-auto no-scrollbar lg:overflow-visible flex-1"
+                ref={scrollRef}
+            >
+                <ul className="flex lg:flex-col gap-1 px-4 lg:px-0 min-w-max lg:min-w-0" role="menu">
+                    {MENU_ITEMS.map((item, i) => {
+                        const isActive = menuIndex === i
+                        return (
+                            <motion.li
+                                key={item.scene}
+                                custom={i}
+                                variants={MENU_ITEM_VARIANTS}
+                                initial="initial"
+                                animate="animate"
+                                className="inline-block lg:block"
                             >
-                                {/* Neon Indicator - Centered Vertically */}
-                                <motion.div
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-2/3 rounded-full"
-                                    initial={false}
-                                    animate={{
-                                        opacity: menuIndex === i ? 1 : 0,
-                                        scaleY: menuIndex === i ? 1 : 0.5,
-                                        backgroundColor: item.color,
-                                        boxShadow: menuIndex === i ? `0 0 10px ${item.color}` : 'none'
-                                    }}
-                                    transition={{ duration: 0.2 }}
-                                />
-
-                                <span className="relative z-10">
-                                    {item.scene === 'language'
-                                        ? (language === 'en' ? 'Language: EN' : 'Dil: TR')
-                                        : item.label[language]
-                                    }
-                                </span>
-
-                                {/* Right Pulse - Centered Vertically */}
-                                {menuIndex === i && (
+                                <button
+                                    role="menuitem"
+                                    className={`relative flex items-center gap-3 px-4 lg:px-6 py-2.5 lg:py-4 font-mono text-[11px] lg:text-sm uppercase tracking-wider rounded transition-all whitespace-nowrap
+                                      ${isActive
+                                            ? 'text-white border border-white/20 bg-white/5 shadow-[0_0_15px_rgba(255,255,255,0.05)]'
+                                            : 'text-[#a0a0b8] border border-transparent hover:text-white hover:bg-white/3'
+                                        }`}
+                                    onClick={() => handleSelect(item.href as string, i)}
+                                    onMouseEnter={() => !isActive && setPreviewScene(item.scene as any)}
+                                    onMouseLeave={() => setPreviewScene(null)}
+                                >
+                                    {/* Neon Indicator */}
                                     <motion.div
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
-                                        layoutId="activeIndicator"
-                                        style={{ backgroundColor: item.color, boxShadow: `0 0 8px ${item.color}` }}
-                                        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                                        className="w-1 h-3 lg:h-6 rounded-full"
+                                        initial={false}
+                                        animate={{
+                                            opacity: isActive ? 1 : 0.3,
+                                            backgroundColor: isActive ? item.color : '#a0a0b8',
+                                            boxShadow: isActive ? `0 0 10px ${item.color}` : 'none'
+                                        }}
+                                        transition={{ duration: 0.2 }}
                                     />
-                                )}
-                            </motion.button>
-                        </motion.li>
-                    ))}
-                </ul>
+                                    <span>{item.label[language]}</span>
 
-                <AnimatePresence>
-                    {!hasInteracted && bootComplete && (
-                        <motion.div
-                            className="mt-auto p-4 bg-white/[0.02] border border-white/[0.05] rounded"
-                            variants={FADE_IN_UP}
-                            initial="initial"
-                            animate="animate"
-                            exit="initial"
-                            transition={{ delay: 2 }}
-                        >
-                            <p className="font-mono text-[10px] text-[#6a6a80] leading-loose">
-                                {language === 'en'
-                                    ? 'NAV_HINT: Use ↑↓ or ENTER to cycle through logs.'
-                                    : 'NAV_İPUCU: Kayıtlar arasında gezinmek için ↑↓ veya ENTER kullanın.'}
-                            </p>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                                    {/* Pulse for Desktop Active */}
+                                    {isActive && (
+                                        <motion.div
+                                            className="hidden lg:block absolute right-4 w-1.5 h-1.5 rounded-full"
+                                            layoutId="activeIndicator"
+                                            style={{ backgroundColor: item.color, boxShadow: `0 0 8px ${item.color}` }}
+                                        />
+                                    )}
+                                </button>
+                            </motion.li>
+                        )
+                    })}
+                </ul>
+            </div>
+
+            {/* Navigation Hint - Desktop Only */}
+            <div className="hidden lg:block p-8 mt-auto">
+                <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded">
+                    <p className="font-mono text-[10px] text-[#6a6a80] leading-loose">
+                        {language === 'en'
+                            ? 'SYS_INF: LOGS ARCHIVED. USE ARROWS TO CYCLE.'
+                            : 'SİS_BİLGİ: KAYITLAR ARŞİVLENDİ. GEZİNMEK İÇİN OKLARI KULLANIN.'}
+                    </p>
+                </div>
             </div>
         </nav>
     )
