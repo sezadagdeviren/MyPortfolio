@@ -1,0 +1,176 @@
+.card {
+    position: relative;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color var(--transition-base);
+}
+
+.card:hover {
+    border-color: var(--color-border-active);
+}
+
+.card.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.card.viewed {
+    border-color: rgba(0, 255, 136, 0.3);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.episodeNumber {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--color-accent-cyan);
+    padding: 0.25rem 0.5rem;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 2px;
+}
+
+.metadata {
+    display: flex;
+    gap: var(--spacing-sm);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+}
+
+.difficulty {
+    color: var(--color-accent-orange);
+}
+
+.imageWrapper {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    margin-bottom: var(--spacing-md);
+    border-radius: 2px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.7;
+    transition: transform var(--transition-slow), opacity var(--transition-base);
+}
+
+.card:hover .image {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.imageOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, var(--color-bg-secondary), transparent);
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.3;
+}
+
+.description {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-md);
+}
+
+.techStack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.techBadge {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+}
+
+.lockOverlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 15, 0.9);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.lockIcon {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.lockText {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.viewedBadge {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    width: 24px;
+    height: 24px;
+    background: var(--color-accent-green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-bg-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.hoverGlow {
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg,
+            rgba(0, 212, 255, 0.1),
+            rgba(255, 0, 255, 0.1));
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    pointer-events: none;
+    border-radius: var(--border-radius);
+}
+
+.card:hover .hoverGlow {
+    opacity: 1;
+}
+
+.card.locked:hover .hoverGlow {
+    opacity: 0;
+}
